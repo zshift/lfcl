@@ -33,7 +33,28 @@ impl<'a> LuxaforDevice<'a> {
         })
     }
 
-    pub fn solid(self, r: u8, g: u8, b: u8) -> HidResult<usize> {
-        self.hid_device.write(&[consts::mode::STATIC, consts::led::ALL, r, g, b])
+    // solid
+    pub fn solid(self, r: u8, g: u8, b: u8, led: u8) -> HidResult<usize> {
+        self.hid_device.write(&[consts::mode::STATIC, led, r, g, b])
+    }
+
+    // last number is the timing of the fade. bigger == longer. 
+    pub fn fade(self, r: u8, g: u8, b: u8, led: u8) -> HidResult<usize> {
+        self.hid_device.write(&[consts::mode::FADE, led, r, g, b, 255])
+    }
+
+    // 1-7 works, but 0 and 10 don't. Not sure how the other patterns are indexed yet. 
+    pub fn pattern(self) -> HidResult<usize> {
+        self.hid_device.write(&[consts::mode::PATTERN, 7])
+    }
+
+    // not sure if there are more options, (eg strobe timing) but it works
+    pub fn strobe(self, r: u8, g: u8, b: u8, led: u8) -> HidResult<usize> {
+        self.hid_device.write(&[consts::mode::STROBE, led, r, g, b])
+    }
+
+    // not working yet
+    pub fn wave(self, r: u8, g: u8, b: u8, led: u8) -> HidResult<usize> {
+        self.hid_device.write(&[consts::mode::WAVE, led, r, g, b])
     }
 }

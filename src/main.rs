@@ -6,8 +6,8 @@ extern crate clap;
 extern crate lfclib;
 
 use clap::Arg;
-use lfclib::LuxaforContext;
-use lfclib::consts;
+use lfclib::{LuxaforContext, consts};
+use std::fmt::{Debug, Display};
 
 fn main() {
     let matches : clap::ArgMatches = app_from_crate!()
@@ -42,7 +42,7 @@ fn main() {
     let _led : u8 = match matches
         .value_of("LED")
         .map(|v| v.to_lowercase()) {
-        
+
         Some(val) => {
             match val.as_str() {
                 "a" => consts::led::ALL,
@@ -60,11 +60,24 @@ fn main() {
         _ => consts::led::ALL
     };
 
+    fn safe<T, E: Debug + Display>(res: Result<T, E>) {
+        match res {
+          Err(e) => println!("error making call: {:?}", e),
+          Ok(_) => (),
+        }
+    } 
+
     let ctx = LuxaforContext::new().unwrap();
-    let device = ctx.open_device(lfclib::consts::FULL_FLAG).unwrap();
-    device.solid(_colour[0], _colour[1], _colour[2], _led).unwrap();
-    // device.fade(_colour[0], _colour[1], _colour[2], _led).unwrap();
-    // device.pattern().unwrap();
-    // device.strobe(_colour[0], _colour[1], _colour[2], _led).unwrap();
-    // device.wave(_colour[0], _colour[1], _colour[2], _led).unwrap();
+    let result = ctx.open_device(lfclib::consts::FULL_FLAG);
+    if result.is_err() {
+      let e = result.err().unwrap();
+      println!("failed to open device: {:?}", e);
+      std::process::exit(1);
+    }
+    let device = result.unwrap();
+    safe(device.solid(_colour[0], _colour[1], _colour[2], _led));
+    safe(device.fade(_colour[0], _colour[1], _colour[2], _led));
+    safe(device.pattern());
+    safe(device.strobe(_colour[0], _colour[1], _colour[2], _led));
+    safe(device.wave(_colour[0], _colour[1], _colour[2], _led));
 }
